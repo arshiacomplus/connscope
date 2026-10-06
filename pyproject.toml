@@ -30,3 +30,7 @@ where = ["src"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+markers = [
+    "network: tests that require internet access",
+]
+asyncio_mode = "auto"

@@ -25,7 +25,6 @@ class DummyProbe(Probe):
         )
 
 
-@pytest.mark.asyncio
 async def test_engine_runs_registered_probe():
     probe = DummyProbe()
     engine = ProbeEngine()
@@ -42,7 +41,6 @@ async def test_engine_runs_registered_probe():
     assert result.metrics["latency_ms"] == 2.5
 
 
-@pytest.mark.asyncio
 async def test_engine_passes_config():
     class ConfigProbe(Probe):
         name = "config_probe"
