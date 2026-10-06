@@ -1,28 +1,31 @@
 # Roadmap
 
 ## Phase 0
-Project foundation.
+Foundation
 
 ## Phase 1
-Core abstractions.
+Core Contracts
 
 ## Phase 2
-Basic network probes.
+Basic Probes
 
 ## Phase 3
-CLI.
+CLI
 
 ## Phase 4
-Remote agent.
+Structured Results
 
 ## Phase 5
-Advanced probes.
+Remote Agent
 
 ## Phase 6
-Monitoring and history.
+Advanced Probes
 
 ## Phase 7
-API.
+Storage / History / Monitoring
 
 ## Phase 8
-GUI.
+API
+
+## Phase 9
+GUI / Observatory
