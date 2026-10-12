@@ -1,4 +1,5 @@
 import io
+import json
 from datetime import datetime, timezone
 from unittest.mock import patch
 import pytest
@@ -8,10 +9,19 @@ from connscope.cli.main import ExitCode, cli_entry, create_default_registry, mai
 
 
 class MockProbe(Probe):
-    def __init__(self, name: str, status: ProbeStatus, error: str | None = None):
+    def __init__(
+        self,
+        name: str,
+        status: ProbeStatus,
+        error: str | None = None,
+        metrics: dict | None = None,
+        details: dict | None = None,
+    ):
         self.name = name
         self.status = status
         self.error = error
+        self.metrics = metrics if metrics is not None else {"latency_ms": 15.0}
+        self.details = details if details is not None else {"dummy": True}
         self.last_target: Target | None = None
         self.last_config: dict | None = None
 
@@ -24,8 +34,8 @@ class MockProbe(Probe):
             status=self.status,
             started_at=datetime.now(timezone.utc),
             duration_ms=15.0,
-            metrics={"latency_ms": 15.0},
-            details={"dummy": True},
+            metrics=dict(self.metrics),
+            details=dict(self.details),
             error=self.error,
         )
 
@@ -242,3 +252,122 @@ def test_main_calls_sys_exit():
     with patch("sys.exit") as mock_exit, patch("connscope.cli.main.cli_entry", return_value=0):
         main()
         mock_exit.assert_called_once_with(0)
+
+
+def test_cli_run_json_success():
+    reg = ProbeRegistry()
+    mock_tcp = MockProbe("tcp_connect", ProbeStatus.SUCCESS)
+    reg.register(mock_tcp)
+
+    out = io.StringIO()
+    err = io.StringIO()
+    code = cli_entry(["run", "tcp", "example.com:443", "--json"], stdout=out, stderr=err, registry=reg)
+
+    assert code == ExitCode.OK
+    assert err.getvalue() == ""
+    data = json.loads(out.getvalue())
+    assert data["probe"] == "tcp_connect"
+    assert data["status"] == "success"
+    assert data["target"] == {"host": "example.com", "port": 443}
+    assert data["duration_ms"] == 15.0
+    assert data["metrics"] == {"latency_ms": 15.0}
+    assert data["details"] == {"dummy": True}
+    assert data["error"] is None
+
+
+def test_cli_run_json_failed():
+    reg = ProbeRegistry()
+    mock_tcp = MockProbe("tcp_connect", ProbeStatus.FAILED, error="Connection refused")
+    reg.register(mock_tcp)
+
+    out = io.StringIO()
+    err = io.StringIO()
+    code = cli_entry(["run", "tcp_connect", "example.com:80", "--json"], stdout=out, stderr=err, registry=reg)
+
+    assert code == ExitCode.FAILED
+    assert err.getvalue() == ""
+    data = json.loads(out.getvalue())
+    assert data["status"] == "failed"
+    assert data["error"] == "Connection refused"
+
+
+def test_cli_run_json_timeout():
+    reg = ProbeRegistry()
+    mock_tls = MockProbe("tls_handshake", ProbeStatus.TIMEOUT, error="Handshake timed out")
+    reg.register(mock_tls)
+
+    out = io.StringIO()
+    err = io.StringIO()
+    code = cli_entry(["run", "tls", "example.com:443", "--json"], stdout=out, stderr=err, registry=reg)
+
+    assert code == ExitCode.TIMEOUT
+    assert err.getvalue() == ""
+    data = json.loads(out.getvalue())
+    assert data["status"] == "timeout"
+    assert data["error"] == "Handshake timed out"
+
+
+def test_cli_run_json_usage_error_stdout_empty():
+    reg = create_default_registry()
+    out = io.StringIO()
+    err = io.StringIO()
+    code = cli_entry(["run", "tcp", "example.com", "--json"], stdout=out, stderr=err, registry=reg)
+
+    assert code == ExitCode.USAGE_ERROR
+    assert out.getvalue() == ""
+    assert "Target port is required for TCP probe" in err.getvalue()
+
+
+def test_cli_run_json_serialization_error_stdout_empty():
+    reg = ProbeRegistry()
+    bad_probe = MockProbe("bad_probe", ProbeStatus.SUCCESS, metrics={"bad": float("nan")})
+    reg.register(bad_probe)
+
+    out = io.StringIO()
+    err = io.StringIO()
+    code = cli_entry(["run", "bad_probe", "example.com", "--json"], stdout=out, stderr=err, registry=reg)
+
+    assert code == ExitCode.INTERNAL_ERROR
+    assert out.getvalue() == ""
+    assert "Internal error: Non-finite float value" in err.getvalue()
+
+
+def test_cli_run_json_flag_placement():
+    reg = ProbeRegistry()
+    mock_dns = MockProbe("dns_resolve", ProbeStatus.SUCCESS)
+    reg.register(mock_dns)
+
+    out = io.StringIO()
+    err = io.StringIO()
+    code = cli_entry(["run", "dns", "example.com", "--timeout", "3.0", "--json"], stdout=out, stderr=err, registry=reg)
+    assert code == ExitCode.OK
+    assert err.getvalue() == ""
+    data = json.loads(out.getvalue())
+    assert data["probe"] == "dns_resolve"
+    assert mock_dns.last_config == {"timeout_s": 3.0}
+
+    out2 = io.StringIO()
+    err2 = io.StringIO()
+    code2 = cli_entry(["run", "dns", "example.com", "--json", "--timeout", "4.0"], stdout=out2, stderr=err2, registry=reg)
+    assert code2 == ExitCode.OK
+    assert err2.getvalue() == ""
+    data2 = json.loads(out2.getvalue())
+    assert data2["probe"] == "dns_resolve"
+    assert mock_dns.last_config == {"timeout_s": 4.0}
+
+
+def test_cli_run_without_json_preserves_text():
+    reg = ProbeRegistry()
+    mock_tcp = MockProbe("tcp_connect", ProbeStatus.SUCCESS)
+    reg.register(mock_tcp)
+
+    out = io.StringIO()
+    err = io.StringIO()
+    code = cli_entry(["run", "tcp", "example.com:443"], stdout=out, stderr=err, registry=reg)
+
+    assert code == ExitCode.OK
+    val = out.getvalue()
+    assert "Probe:    tcp_connect" in val
+    assert "Status:   success" in val
+    with pytest.raises(json.JSONDecodeError):
+        json.loads(val)

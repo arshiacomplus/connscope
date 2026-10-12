@@ -6,7 +6,12 @@ from typing import Any, TextIO
 
 from connscope.core import ProbeEngine, ProbeRegistry, ProbeStatus
 from connscope.probes import register_builtin_probes
-from connscope.cli.output import render_error, render_probe_list, render_result
+from connscope.cli.output import (
+    render_error,
+    render_probe_list,
+    render_result,
+    render_result_json,
+)
 from connscope.cli.parse import (
     PROBE_ALIASES,
     parse_http_target,
@@ -126,6 +131,12 @@ def build_parser(stdout: TextIO | None = None, stderr: TextIO | None = None) -> 
         default=None,
         help="Probe timeout in seconds",
     )
+    run_parser.add_argument(
+        "--json",
+        action="store_true",
+        default=False,
+        help="Output measurement result as JSON",
+    )
 
     return parser
 
@@ -187,7 +198,11 @@ def _dispatch(
 
         engine = ProbeEngine(registry=reg)
         result = asyncio.run(engine.run(canonical, target, config))
-        out_stream.write(render_result(result) + "\n")
+        if getattr(args, "json", False):
+            out_str = render_result_json(result)
+        else:
+            out_str = render_result(result)
+        out_stream.write(out_str + "\n")
         return STATUS_TO_EXIT_CODE.get(result.status, ExitCode.INTERNAL_ERROR)
 
     err_stream.write(render_error(f"Unknown command '{args.command}'") + "\n")

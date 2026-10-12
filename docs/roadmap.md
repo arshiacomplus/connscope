@@ -13,7 +13,7 @@ Basic Probes
 CLI (completed)
 
 ## Phase 4
-Structured Results
+Structured Results (completed)
 
 ## Phase 5
 Remote Agent
