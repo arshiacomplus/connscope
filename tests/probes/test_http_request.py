@@ -62,6 +62,33 @@ async def test_http_request_failed_mocked(mock_open_connection):
     assert result.status == ProbeStatus.FAILED
     assert "Connection refused" in result.error
 
+@patch("asyncio.open_connection")
+async def test_http_request_host_header_non_default_port_and_ipv6(mock_open_connection):
+    mock_reader = MagicMock()
+    mock_reader.readline = AsyncMock()
+    mock_reader.readline.return_value = b"HTTP/1.1 200 OK\r\n"
+
+    mock_writer = MagicMock()
+    mock_writer.wait_closed = AsyncMock()
+    mock_writer.drain = AsyncMock()
+    mock_writer.close = MagicMock()
+    mock_writer.write = MagicMock()
+
+    mock_open_connection.return_value = (mock_reader, mock_writer)
+
+    probe = HttpRequestProbe()
+    # Test 1: Non-default port for TLS
+    await probe.run(Target(host="example.com", port=8443), config={"use_tls": True})
+    assert b"Host: example.com:8443\r\n" in mock_writer.write.call_args[0][0]
+
+    # Test 2: IPv6 with non-default port
+    await probe.run(Target(host="2001:db8::1", port=8080), config={"use_tls": False})
+    assert b"Host: [2001:db8::1]:8080\r\n" in mock_writer.write.call_args[0][0]
+
+    # Test 3: Default port omitted in Host header
+    await probe.run(Target(host="example.com", port=443), config={"use_tls": True})
+    assert b"Host: example.com\r\n" in mock_writer.write.call_args[0][0]
+
 @pytest.mark.network
 async def test_http_request_network_real():
     probe = HttpRequestProbe()

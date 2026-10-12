@@ -45,7 +45,12 @@ class HttpRequestProbe(Probe):
             path = (config or {}).get("path", "/")
             method = (config or {}).get("method", "GET")
             
-            request = f"{method} {path} HTTP/1.1\r\nHost: {target.host}\r\nConnection: close\r\n\r\n"
+            host_header = f"[{target.host}]" if ":" in target.host and not target.host.startswith("[") else target.host
+            default_port = 443 if use_tls else 80
+            if port != default_port:
+                host_header = f"{host_header}:{port}"
+
+            request = f"{method} {path} HTTP/1.1\r\nHost: {host_header}\r\nConnection: close\r\n\r\n"
             writer.write(request.encode("utf-8"))
             await writer.drain()
             

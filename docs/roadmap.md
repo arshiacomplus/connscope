@@ -10,7 +10,7 @@ Core Contracts
 Basic Probes
 
 ## Phase 3
-CLI
+CLI (completed)
 
 ## Phase 4
 Structured Results
