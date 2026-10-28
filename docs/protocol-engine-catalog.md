@@ -539,8 +539,8 @@ Phase 15 transitions ConnScope from creating isolated adapter classes for indivi
    - Native UDP L3 network-interface tunnel configuration.
    - Parameters: `private_key` (secret), `public_key`, `preshared_key` (secret), `endpoint`, `allowed_ips`, `address` (default `10.0.0.2/32`), `listen_port`, `mtu` (1280–1500, default 1420), `persistent_keepalive` (0–3600, default 25).
    - Variants: `baseline` (MTU 1420, keepalive 25s), `low_mtu` (MTU 1280), `keepalive_disabled` (keepalive 0s).
-   - Execution Mode: `network_interface` ([`TunnelExecutionMode.NETWORK_INTERFACE`](file:///home/arshiacomplus/connscope/src/connscope/adapters/models.py)).
-   - Adapter ID: `wireguard_standard` ([`WireGuardStandardAdapter`](file:///home/arshiacomplus/connscope/src/connscope/adapters/wireguard.py)).
+   - Execution Mode: `network_interface` ([`TunnelExecutionMode.NETWORK_INTERFACE`](../src/connscope/adapters/models.py)).
+   - Adapter ID: `wireguard_standard` ([`WireGuardStandardAdapter`](../src/connscope/adapters/wireguard.py)).
    - Evidence Status: `CONFIG_VALIDATION_IMPLEMENTED` and `MOCKED_LIFECYCLE_TESTED`.
 2. **AmneziaWG (`amnezia_wg_obfs`)**:
    - Dedicated obfuscated WireGuard fork (not merely a generic `noise=true` flag).
@@ -550,15 +550,15 @@ Phase 15 transitions ConnScope from creating isolated adapter classes for indivi
      - `s1`, `s2`: Init and response packet junk padding bytes (0–1280, default 56 / 56).
      - `h1`, `h2`, `h3`, `h4`: Custom 4-byte packet header identifiers (1–4294967295, default 1, 2, 3, 4).
    - Variants: `baseline`, `mild_junk`, `heavy_junk`, `custom_headers`.
-   - Execution Mode: `network_interface` ([`TunnelExecutionMode.NETWORK_INTERFACE`](file:///home/arshiacomplus/connscope/src/connscope/adapters/models.py)).
-   - Adapter ID: `amnezia_wg_standard` ([`AmneziaWGStandardAdapter`](file:///home/arshiacomplus/connscope/src/connscope/adapters/amnezia_wg.py)).
+   - Execution Mode: `network_interface` ([`TunnelExecutionMode.NETWORK_INTERFACE`](../src/connscope/adapters/models.py)).
+   - Adapter ID: `amnezia_wg_standard` ([`AmneziaWGStandardAdapter`](../src/connscope/adapters/amnezia_wg.py)).
    - Evidence Status: `CONFIG_VALIDATION_IMPLEMENTED` and `MOCKED_LIFECYCLE_TESTED`.
 3. **OpenVPN (`openvpn_udp`, `openvpn_tcp`)**:
    - TLS-authenticated OpenVPN client operating over a virtual TUN device.
    - Parameters: `proto` (udp/tcp), `remote_host`, `remote_port`, `tun_mtu` (1280–1500), `ca_cert` (trusted CA in PEM), `client_cert`, `client_key`, `tls_auth_key`, `tls_crypt_key`, `cipher` (AES-256-GCM, AES-128-GCM, CHACHA20-POLY1305), `remote_cert_tls` (enforced server cert check), `route_nopull` (enforced route non-interference).
    - Variants: `baseline` / `udp_baseline`, `tcp_baseline`, `low_mtu` (1280 bytes).
-   - Execution Mode: `network_interface` ([`TunnelExecutionMode.NETWORK_INTERFACE`](file:///home/arshiacomplus/connscope/src/connscope/adapters/models.py)).
-   - Adapter ID: `openvpn_standard` ([`OpenVPNStandardAdapter`](file:///home/arshiacomplus/connscope/src/connscope/adapters/openvpn.py)).
+   - Execution Mode: `network_interface` ([`TunnelExecutionMode.NETWORK_INTERFACE`](../src/connscope/adapters/models.py)).
+   - Adapter ID: `openvpn_standard` ([`OpenVPNStandardAdapter`](../src/connscope/adapters/openvpn.py)).
    - Evidence Status: `CONFIG_VALIDATION_IMPLEMENTED` and `MOCKED_LIFECYCLE_TESTED`.
 4. **Aether Tunnel (`aether_tun`)**:
    - Runtime placeholder for experimental censorship-resistance implementation.
@@ -587,7 +587,7 @@ The scenario architecture maintains 100% backward compatibility with ConnScope's
 - `xray_vmess_ws_tls` (`XrayVmessWebSocketTlsAdapter`)
 - `singbox_vmess_ws_tls` (`SingBoxVmessWebSocketTlsAdapter`)
 
-Through [`AdapterMigrationBridge`](file:///home/arshiacomplus/connscope/src/connscope/scenarios/migration.py), any `Scenario` referencing an implemented adapter can:
+Through [`AdapterMigrationBridge`](../src/connscope/scenarios/migration.py), any `Scenario` referencing an implemented adapter can:
 - Map directly to the registered `EngineAdapter`.
 - Convert scenario parameters into adapter-compatible configuration dictionaries.
 - Validate parameters under the adapter's existing validation logic.
@@ -655,7 +655,7 @@ connscope matrix run --engine xray,sing_box --profile vless_tcp_reality \
 
 ### 13.1 Architecture Overview
 
-The Scenario Execution Coordinator ([`ScenarioCoordinator`](file:///home/arshiacomplus/connscope/src/connscope/scenarios/coordinator.py)) connects the declarative scenario matrix framework with ConnScope's concrete engine adapters to provide safe, reproducible, and verifiable network measurements.
+The Scenario Execution Coordinator ([`ScenarioCoordinator`](../src/connscope/scenarios/coordinator.py)) connects the declarative scenario matrix framework with ConnScope's concrete engine adapters to provide safe, reproducible, and verifiable network measurements.
 
 ```
 +-------------------------------------------------------------------------------+
@@ -701,7 +701,7 @@ The Scenario Execution Coordinator ([`ScenarioCoordinator`](file:///home/arshiac
 
 ### 13.2 Versioned Result Schema (`MeasurementRecord` v1.0)
 
-Each scenario repetition emits an independent, immutable [`MeasurementRecord`](file:///home/arshiacomplus/connscope/src/connscope/scenarios/records.py) adhering to schema version 1.0.
+Each scenario repetition emits an independent, immutable [`MeasurementRecord`](../src/connscope/scenarios/records.py) adhering to schema version 1.0.
 
 #### Key Fields and Guarantees:
 
@@ -739,7 +739,7 @@ Records are written in standard JSON Lines (`.jsonl`) format via `write_jsonl()`
 
 ### 13.3 Aggregation and Workload Comparability
 
-Raw measurement observations are aggregated by [`aggregate_execution_records()`](file:///home/arshiacomplus/connscope/src/connscope/scenarios/aggregation.py) into [`MatrixExecutionSummary`](file:///home/arshiacomplus/connscope/src/connscope/scenarios/aggregation.py):
+Raw measurement observations are aggregated by [`aggregate_execution_records()`](../src/connscope/scenarios/aggregation.py) into [`MatrixExecutionSummary`](../src/connscope/scenarios/aggregation.py):
 
 1. **Robust Non-Parametric Statistics**:
    - Computes medians, min, and max for total duration, handshake latency, and data transfer time.
@@ -773,7 +773,7 @@ Raw measurement observations are aggregated by [`aggregate_execution_records()`]
 
 ### 14.1 Explicit Execution-Mode Contract
 
-ConnScope explicitly distinguishes two fundamental adapter execution modes via [`TunnelExecutionMode`](file:///home/arshiacomplus/connscope/src/connscope/adapters/models.py):
+ConnScope explicitly distinguishes two fundamental adapter execution modes via [`TunnelExecutionMode`](../src/connscope/adapters/models.py):
 
 | Execution Mode | Enum Value | Architecture & Behavior | Existing & New Adapters |
 |---|---|---|---|
@@ -782,7 +782,7 @@ ConnScope explicitly distinguishes two fundamental adapter execution modes via [
 
 ### 14.2 The Common Layer-3 Lifecycle Contract
 
-The Layer-3 tunnel contract is formalized in [`Layer3TunnelAdapter`](file:///home/arshiacomplus/connscope/src/connscope/adapters/layer3.py), defining an 8-stage lifecycle:
+The Layer-3 tunnel contract is formalized in [`Layer3TunnelAdapter`](../src/connscope/adapters/layer3.py), defining an 8-stage lifecycle:
 
 ```
 +-----------------------------------------------------------------------------------+
@@ -801,7 +801,7 @@ The Layer-3 tunnel contract is formalized in [`Layer3TunnelAdapter`](file:///hom
 
 ### 14.3 Native WireGuard Adapter Implementation
 
-The Native WireGuard backend is implemented in [`WireGuardStandardAdapter`](file:///home/arshiacomplus/connscope/src/connscope/adapters/wireguard.py):
+The Native WireGuard backend is implemented in [`WireGuardStandardAdapter`](../src/connscope/adapters/wireguard.py):
 
 - **Adapter Identifier**: `wireguard_standard`
 - **Supported Capabilities**: `UDP_CONNECT`, `HANDSHAKE`, `TUNNEL_VERIFY`, `DATA_TRANSFER`, `LATENCY`
@@ -908,11 +908,11 @@ ConnScope Phase 17.2 implements the official WireGuard network-namespace socket 
 #### Key Invariants and Guarantees
 
 1. **Origin Socket Placement**:
-   The WireGuard network interface is instantiated in the origin namespace before being moved into the test network namespace via [`LinuxOriginNetnsIsolationBackend`](file:///home/arshiacomplus/connscope/src/connscope/adapters/layer3.py#L728-L885). In the Linux kernel, WireGuard's UDP socket remains bound to the origin namespace's socket layer, while the network interface operates inside the isolated test namespace.
+   The WireGuard network interface is instantiated in the origin namespace before being moved into the test network namespace via [`LinuxOriginNetnsIsolationBackend`](../src/connscope/adapters/layer3.py#L728-L885). In the Linux kernel, WireGuard's UDP socket remains bound to the origin namespace's socket layer, while the network interface operates inside the isolated test namespace.
 2. **Zero Host Network Mutation**:
    Outer UDP packets are routed by the kernel through the origin namespace's existing physical interface and default gateway. ConnScope never modifies host default routes, never installs host firewall or iptables MASQUERADE rules, and never alters `/proc/sys/net/ipv4/ip_forward`.
 3. **Strict Host Verification via `HostNetworkSnapshot`**:
-   Before and after any Layer-3 execution, [`HostNetworkSnapshot`](file:///home/arshiacomplus/connscope/src/connscope/adapters/layer3.py#L64-L136) captures:
+   Before and after any Layer-3 execution, [`HostNetworkSnapshot`](../src/connscope/adapters/layer3.py#L64-L136) captures:
    - Host network interface list (`/sys/class/net`)
    - Host WireGuard devices specifically
    - Host kernel routing table (`ip route show`)
@@ -925,13 +925,13 @@ ConnScope Phase 17.2 implements the official WireGuard network-namespace socket 
 5. **Opt-in Guard**:
    Activation of origin-namespace socket placement requires explicit opt-in via `CONNSCOPE_WIREGUARD_ORIGIN_NETNS=1` combined with `CONNSCOPE_ENABLE_REAL_WIREGUARD=1` (or `CONNSCOPE_TEST_REAL_WIREGUARD=1`). Without these flags, adapters fail closed or retain standard isolated netns semantics.
 6. **Scenario and Measurement Record Grounding**:
-   The scenario execution coordinator and [`MeasurementRecord`](file:///home/arshiacomplus/connscope/src/connscope/scenarios/records.py#L37-L148) record `isolation_strategy: "origin_netns"`, `socket_in_origin_namespace: True`, and the inspected `origin_endpoint_route` inside `record.route_context`.
+   The scenario execution coordinator and [`MeasurementRecord`](../src/connscope/scenarios/records.py#L37-L148) record `isolation_strategy: "origin_netns"`, `socket_in_origin_namespace: True`, and the inspected `origin_endpoint_route` inside `record.route_context`.
 
 ---
 
 ## 15. AmneziaWG Backend with Versioned Parameter Profiles (Phase 18)
 
-ConnScope Phase 18 implements AmneziaWG support within the Layer-3 tunnel framework, catalog scenario matrix, and execution coordinator. Rather than creating disparate adapter classes for every obfuscation combination, Phase 18 models parameter variations as data-driven declarative profiles executed by a unified adapter ([`AmneziaWGStandardAdapter`](file:///home/arshiacomplus/connscope/src/connscope/adapters/amnezia_wg.py)).
+ConnScope Phase 18 implements AmneziaWG support within the Layer-3 tunnel framework, catalog scenario matrix, and execution coordinator. Rather than creating disparate adapter classes for every obfuscation combination, Phase 18 models parameter variations as data-driven declarative profiles executed by a unified adapter ([`AmneziaWGStandardAdapter`](../src/connscope/adapters/amnezia_wg.py)).
 
 ### 15.1 Target Implementation & Kernel Module Contract
 
@@ -947,11 +947,11 @@ The target implementation corresponds to the **AmneziaWG v1.0 schema**. Newer pr
 - `I1`–`I5` (custom packet headers for rekeying / data)
 - Header Protection / Cookie Obfuscation
 
-These parameters belong to userspace implementations or preview revisions. The ConnScope AmneziaWG backend enforces strict schema gating: any configuration containing `i1`–`i5` or `header_protection` is fail-closed rejected with explicit diagnostics ([`UNSUPPORTED_AMNEZIAWG_V2_KEYS`](file:///home/arshiacomplus/connscope/src/connscope/adapters/amnezia_wg.py)).
+These parameters belong to userspace implementations or preview revisions. The ConnScope AmneziaWG backend enforces strict schema gating: any configuration containing `i1`–`i5` or `header_protection` is fail-closed rejected with explicit diagnostics ([`UNSUPPORTED_AMNEZIAWG_V2_KEYS`](../src/connscope/adapters/amnezia_wg.py)).
 
 ### 15.2 Decoupled Layer-3 Architecture via Device Drivers
 
-Phase 18 decouples protocol-specific network interface operations from the common network namespace lifecycle via the abstract [`Layer3DeviceDriver`](file:///home/arshiacomplus/connscope/src/connscope/adapters/layer3.py#L140-L245) interface:
+Phase 18 decouples protocol-specific network interface operations from the common network namespace lifecycle via the abstract [`Layer3DeviceDriver`](../src/connscope/adapters/layer3.py#L140-L245) interface:
 
 ```
                           ┌───────────────────────────┐
@@ -975,7 +975,7 @@ Phase 18 decouples protocol-specific network interface operations from the commo
   └───────────────────────────┘                   └───────────────────────────┘
 ```
 
-Both [`LinuxNetnsIsolationBackend`](file:///home/arshiacomplus/connscope/src/connscope/adapters/layer3.py) and [`LinuxOriginNetnsIsolationBackend`](file:///home/arshiacomplus/connscope/src/connscope/adapters/layer3.py) consume drivers generically without duplicating:
+Both [`LinuxNetnsIsolationBackend`](../src/connscope/adapters/layer3.py) and [`LinuxOriginNetnsIsolationBackend`](../src/connscope/adapters/layer3.py) consume drivers generically without duplicating:
 - Network namespace creation and deletion
 - Loopback interface initialization (`ip link set dev lo up`)
 - IP address assignment (`ip addr add <ip> dev <iface>`)
@@ -987,7 +987,7 @@ Both [`LinuxNetnsIsolationBackend`](file:///home/arshiacomplus/connscope/src/con
 
 ### 15.3 Strict Schema Validation & Cross-Field Constraints
 
-AmneziaWG configuration validation is implemented in [`validate_amneziawg_config`](file:///home/arshiacomplus/connscope/src/connscope/adapters/amnezia_wg.py#L48-L155):
+AmneziaWG configuration validation is implemented in [`validate_amneziawg_config`](../src/connscope/adapters/amnezia_wg.py#L48-L155):
 
 | Parameter | Type | Valid Range / Bounds | Validation Rule |
 |---|---|---|---|
@@ -1018,17 +1018,17 @@ AmneziaWG configuration validation is implemented in [`validate_amneziawg_config
 
 Like WireGuard, `awg setconf` accepts only link-level interface parameters. ConnScope maintains a strict boundary between formats:
 
-1. **`awg setconf` Format** ([`generate_amneziawg_awg_setconf_config`](file:///home/arshiacomplus/connscope/src/connscope/adapters/amnezia_wg.py#L160-L215)):
+1. **`awg setconf` Format** ([`generate_amneziawg_awg_setconf_config`](../src/connscope/adapters/amnezia_wg.py#L160-L215)):
    - Generated with restricted mode `0o600`.
    - Places `Jc`, `Jmin`, `Jmax`, `S1`, `S2`, `H1`, `H2`, `H3`, `H4` under `[Interface]`.
    - **Excludes `Address`, `MTU`, and `DNS`**. Passing these keys causes `awg setconf` to fail immediately.
-2. **Client Export Format** ([`generate_amneziawg_client_config`](file:///home/arshiacomplus/connscope/src/connscope/adapters/amnezia_wg.py#L220-L280)):
+2. **Client Export Format** ([`generate_amneziawg_client_config`](../src/connscope/adapters/amnezia_wg.py#L220-L280)):
    - Export format compatible with `awg-quick` or client imports.
    - Includes `Address`, `MTU`, `DNS`, `[Interface]` with obfuscation fields, and `[Peer]`.
 
 ### 15.5 Declarative Parameter Profiles (Variants)
 
-Rather than maintaining four separate adapter implementations, [`AmneziaWGStandardAdapter`](file:///home/arshiacomplus/connscope/src/connscope/adapters/amnezia_wg.py) (`adapter_id="amnezia_wg_standard"`) executes all data-driven variants defined in the catalog:
+Rather than maintaining four separate adapter implementations, [`AmneziaWGStandardAdapter`](../src/connscope/adapters/amnezia_wg.py) (`adapter_id="amnezia_wg_standard"`) executes all data-driven variants defined in the catalog:
 
 | Variant ID | Profile Concept | Parameters | Use Case |
 |---|---|---|---|
@@ -1039,12 +1039,12 @@ Rather than maintaining four separate adapter implementations, [`AmneziaWGStanda
 
 ### 15.6 Origin-Namespace Socket Placement & Safety Verification
 
-AmneziaWG integrates with [`LinuxOriginNetnsIsolationBackend`](file:///home/arshiacomplus/connscope/src/connscope/adapters/layer3.py#L728-L885) and [`AmneziaWGDeviceDriver`](file:///home/arshiacomplus/connscope/src/connscope/adapters/layer3.py#L310-L375):
+AmneziaWG integrates with [`LinuxOriginNetnsIsolationBackend`](../src/connscope/adapters/layer3.py#L728-L885) and [`AmneziaWGDeviceDriver`](../src/connscope/adapters/layer3.py#L310-L375):
 1. The `amneziawg` interface is created in the origin namespace (`ip link add dev awg0 type amneziawg`).
 2. The outer UDP socket binds to the origin network stack.
 3. The interface is moved into the ephemeral test network namespace (`ip link set awg0 netns <test_netns>`).
 4. Configuration and test workloads execute strictly within the test network namespace.
-5. [`HostNetworkSnapshot`](file:///home/arshiacomplus/connscope/src/connscope/adapters/layer3.py#L64-L136) audits `DEVTYPE=amneziawg` and `awg*` interfaces, ensuring zero host interface leaks, zero host route changes, and unmodified `net.ipv4.ip_forward`.
+5. [`HostNetworkSnapshot`](../src/connscope/adapters/layer3.py#L64-L136) audits `DEVTYPE=amneziawg` and `awg*` interfaces, ensuring zero host interface leaks, zero host route changes, and unmodified `net.ipv4.ip_forward`.
 6. Shielded teardown (`asyncio.shield`) deletes origin or namespace interfaces even if the measurement task is cancelled.
 
 ### 15.7 Evidence Tiers and Verification Breakdown
@@ -1076,7 +1076,7 @@ ConnScope targets standard OpenVPN client tunnels operating over virtual TUN cha
 ### 16.2 Shared Layer-3 Architecture and Driver Decoupling
 
 Rather than creating a standalone process adapter with duplicated lifecycle logic, OpenVPN integrates directly into the unified Layer-3 tunnel framework introduced in Phase 17:
-- **[`Layer3DeviceDriver`](file:///home/arshiacomplus/connscope/src/connscope/adapters/layer3.py#L225)**: Implemented as [`OpenVPNDeviceDriver`](file:///home/arshiacomplus/connscope/src/connscope/adapters/layer3.py#L380-L450).
+- **[`Layer3DeviceDriver`](../src/connscope/adapters/layer3.py#L225)**: Implemented as [`OpenVPNDeviceDriver`](../src/connscope/adapters/layer3.py#L380-L450).
   - `driver_name = "openvpn"`
   - `link_type = "tun"`
   - `tool_binary = "openvpn"`
@@ -1091,7 +1091,7 @@ Rather than creating a standalone process adapter with duplicated lifecycle logi
 
 ### 16.3 Strict Schema Validation and Security Hardening
 
-OpenVPN configuration files support numerous directives, some of which present severe security risks (arbitrary command execution, host network takeover). [`validate_openvpn_config`](file:///home/arshiacomplus/connscope/src/connscope/adapters/openvpn.py#L80-L190) enforces a strict whitelist and hard safety constraints:
+OpenVPN configuration files support numerous directives, some of which present severe security risks (arbitrary command execution, host network takeover). [`validate_openvpn_config`](../src/connscope/adapters/openvpn.py#L80-L190) enforces a strict whitelist and hard safety constraints:
 
 1. **Whitelisted Parameters**:
    - `remote_host`: Validated IPv4, IPv6, or RFC 1123 hostname.
@@ -1114,7 +1114,7 @@ OpenVPN configuration files support numerous directives, some of which present s
 
 ### 16.4 Hardened Configuration Generation
 
-[`generate_openvpn_client_config`](file:///home/arshiacomplus/connscope/src/connscope/adapters/openvpn.py#L195-L260) generates self-contained `.ovpn` configuration text:
+[`generate_openvpn_client_config`](../src/connscope/adapters/openvpn.py#L195-L260) generates self-contained `.ovpn` configuration text:
 - Written with restricted permissions (`0o600`).
 - Embeds all cryptographic materials inline (`<ca>`, `<cert>`, `<key>`, `<tls-auth>`, `<tls-crypt>`), eliminating external path dependencies and preventing path traversal vulnerabilities.
 - Enforces essential client options: `client`, `dev tun`, `nobind`, `persist-tun`, `persist-key`, `remote-cert-tls server`, and `route-nopull`.
@@ -1128,11 +1128,11 @@ A critical architectural distinction exists between WireGuard and userspace VPN 
    OpenVPN runs as a userspace process reading and writing from `/dev/net/tun` while managing its own network sockets. Moving a virtual TUN interface into an isolated namespace does not migrate userspace network sockets.
    If OpenVPN executes inside an isolated network namespace, its userspace TCP/UDP socket cannot reach external WAN endpoints unless the namespace is routed through the host via veth pairs and host NAT/forwarding (`iptables` / `ip_forward`). Because ConnScope strictly prohibits modifying host firewall rules, routes, or sysctls, automated creation of host NAT bridges is not permitted.
 3. **Operational Policy**:
-   ConnScope safely documents this limitation in [`OpenVPNDeviceDriver.check_capabilities`](file:///home/arshiacomplus/connscope/src/connscope/adapters/layer3.py#L425-L445) and gates real tunnel execution behind explicit capability checks. Mocked lifecycles, configuration generation, and declarative scenario execution are verified, while live unrouted network-namespace tunnel execution remains safely disabled and unclaimed.
+   ConnScope safely documents this limitation in [`OpenVPNDeviceDriver.check_capabilities`](../src/connscope/adapters/layer3.py#L425-L445) and gates real tunnel execution behind explicit capability checks. Mocked lifecycles, configuration generation, and declarative scenario execution are verified, while live unrouted network-namespace tunnel execution remains safely disabled and unclaimed.
 
 ### 16.6 Declarative Parameter Variants
 
-A single adapter class, [`OpenVPNStandardAdapter`](file:///home/arshiacomplus/connscope/src/connscope/adapters/openvpn.py#L265-L330) (`adapter_id="openvpn_standard"`), serves both UDP and TCP profiles across all parameter variants:
+A single adapter class, [`OpenVPNStandardAdapter`](../src/connscope/adapters/openvpn.py#L265-L330) (`adapter_id="openvpn_standard"`), serves both UDP and TCP profiles across all parameter variants:
 
 | Variant ID | Profile Concept | Protocol | Cipher | MTU | Purpose |
 |---|---|---|---|---|---|
@@ -1203,10 +1203,10 @@ Phase 20 extends ConnScope from a single-node execution environment to a multi-n
 
 A measurement node represents a concrete execution vantage point characterized by:
 - **Node Identifier (`node_id`)**: Stable, non-empty string containing only alphanumeric characters, underscores, and hyphens (`^[a-zA-Z0-9_\-]+$`).
-- **Node Type (`node_type`)**: [`NodeType.LOCAL`](file:///home/arshiacomplus/connscope/src/connscope/scenarios/models.py#L379-L384) (executes on the coordinator host), [`NodeType.REMOTE_AGENT`](file:///home/arshiacomplus/connscope/src/connscope/scenarios/models.py#L379-L384) (orchestrated over HTTPS), or [`NodeType.SANDBOX`](file:///home/arshiacomplus/connscope/src/connscope/scenarios/models.py#L379-L384).
+- **Node Type (`node_type`)**: [`NodeType.LOCAL`](../src/connscope/scenarios/models.py#L379-L384) (executes on the coordinator host), [`NodeType.REMOTE_AGENT`](../src/connscope/scenarios/models.py#L379-L384) (orchestrated over HTTPS), or [`NodeType.SANDBOX`](../src/connscope/scenarios/models.py#L379-L384).
 - **Endpoint URL (`endpoint_url` / `agent_endpoint`)**: Required for remote agents. Must use HTTPS (`https://`) unless targeting loopback addresses (`127.0.0.1`, `::1`, `localhost`) for testing. Plaintext HTTP across non-loopback networks is strictly rejected. Embedded credentials (`https://user:pass@host`) are strictly forbidden.
 - **Authentication Token Reference (`auth_token_ref`)**: An external identifier or environment variable name (e.g. `CONNSCOPE_AGENT_TOKEN_FRANKFURT`). **Plaintext tokens are strictly forbidden in catalogs and node definitions.**
-- **Token Resolution Order ([`resolve_node_token`](file:///home/arshiacomplus/connscope/src/connscope/scenarios/nodes.py#L82-L115))**:
+- **Token Resolution Order ([`resolve_node_token`](../src/connscope/scenarios/nodes.py#L82-L115))**:
   1. Explicit caller-supplied token dictionary mapping `node_id -> token`.
   2. Custom token resolver callback.
   3. Environment variable referenced by `auth_token_ref`.
@@ -1220,7 +1220,7 @@ A measurement node represents a concrete execution vantage point characterized b
 Before executing any measurement scenario on a remote node, ConnScope conducts an authenticated pre-flight capability query:
 - **Route**: `GET /v1/capabilities`
 - **Authentication**: Strict HTTP `Authorization: Bearer <token>` required. Unauthenticated or invalid token requests return HTTP 401 `unauthorized`.
-- **Response Schema ([`AgentCapabilities`](file:///home/arshiacomplus/connscope/src/connscope/agent/protocol.py#L98-L135))**:
+- **Response Schema ([`AgentCapabilities`](../src/connscope/agent/protocol.py#L98-L135))**:
   - `protocol_version`: Integer 1.
   - `api_version`: String `"1.0"`.
   - `supported_operations`: List of supported endpoints (`["measure", "adapter_execute"]`).
@@ -1234,14 +1234,14 @@ Before executing any measurement scenario on a remote node, ConnScope conducts a
 
 The remote agent enforces a strict default-deny policy for adapter execution:
 1. **Default-Deny Allowlist**:
-   By default, [`AgentServer.allowlisted_adapters`](file:///home/arshiacomplus/connscope/src/connscope/agent/server.py#L65-L95) is empty (`()`). The agent strictly rejects any adapter execution request unless the operator explicitly allowlists that specific adapter ID.
-2. **Permitted Remote Adapters ([`PERMITTED_REMOTE_ADAPTERS`](file:///home/arshiacomplus/connscope/src/connscope/agent/protocol.py#L21-L26))**:
+   By default, [`AgentServer.allowlisted_adapters`](../src/connscope/agent/server.py#L65-L95) is empty (`()`). The agent strictly rejects any adapter execution request unless the operator explicitly allowlists that specific adapter ID.
+2. **Permitted Remote Adapters ([`PERMITTED_REMOTE_ADAPTERS`](../src/connscope/agent/protocol.py#L21-L26))**:
    Only 4 userspace local proxy adapters may be allowlisted for remote execution:
    - `xray_vless_tcp_reality`
    - `singbox_vless_tcp_reality`
    - `xray_vmess_ws_tls`
    - `singbox_vmess_ws_tls`
-3. **Strict Prohibition of Layer-3 Adapters ([`PROHIBITED_REMOTE_ADAPTERS`](file:///home/arshiacomplus/connscope/src/connscope/agent/protocol.py#L28-L33))**:
+3. **Strict Prohibition of Layer-3 Adapters ([`PROHIBITED_REMOTE_ADAPTERS`](../src/connscope/agent/protocol.py#L28-L33))**:
    Network-interface-based Layer-3 tunnel adapters are strictly prohibited from remote execution:
    - `wireguard_standard`
    - `amnezia_wg_standard`
@@ -1256,21 +1256,21 @@ The remote agent enforces a strict default-deny policy for adapter execution:
 ### 17.5 Distributed Scenario Scheduling & Safe Orchestration Invariants
 
 - **Multi-Node Generation**:
-  `ScenarioGenerator.generate_explicit`, `generate_ofat`, `generate_pairwise`, and `generate_exhaustive` accept a sequence of [`MeasurementNode`](file:///home/arshiacomplus/connscope/src/connscope/scenarios/models.py#L386-L455) instances. Scenarios are planned across the Cartesian product of profiles, variants, and vantage nodes.
+  `ScenarioGenerator.generate_explicit`, `generate_ofat`, `generate_pairwise`, and `generate_exhaustive` accept a sequence of [`MeasurementNode`](../src/connscope/scenarios/models.py#L386-L455) instances. Scenarios are planned across the Cartesian product of profiles, variants, and vantage nodes.
 - **Node-Differentiated Scenario Signatures**:
   Scenario IDs and deduplication hashes incorporate `scn.node.node_id`. Identical protocol variants running on distinct nodes remain distinct and are never accidentally deduplicated.
 - **Zero Local Fallback Policy**:
-  If a remote agent encounters an error during pre-flight discovery or scenario execution (e.g. connection refused, network timeout, authentication failure, server crash), [`ScenarioCoordinator`](file:///home/arshiacomplus/connscope/src/connscope/scenarios/coordinator.py#L67-L140) records the failure against the remote node with an appropriate failure stage (`node_unavailable`, `capability_unavailable`, `timeout`, or `process`). **The coordinator NEVER silently falls back to local execution.** Local fallback would falsify vantage point data and invalidate measurement comparability.
+  If a remote agent encounters an error during pre-flight discovery or scenario execution (e.g. connection refused, network timeout, authentication failure, server crash), [`ScenarioCoordinator`](../src/connscope/scenarios/coordinator.py#L67-L140) records the failure against the remote node with an appropriate failure stage (`node_unavailable`, `capability_unavailable`, `timeout`, or `process`). **The coordinator NEVER silently falls back to local execution.** Local fallback would falsify vantage point data and invalidate measurement comparability.
 
 ### 17.6 Cross-Node Comparability & Aggregation
 
-When aggregating multi-node measurement runs ([`aggregate_execution_records`](file:///home/arshiacomplus/connscope/src/connscope/scenarios/aggregation.py#L125-L295)):
+When aggregating multi-node measurement runs ([`aggregate_execution_records`](../src/connscope/scenarios/aggregation.py#L125-L295)):
 - **Comparability Criteria**:
   Scenarios executed across distinct nodes are comparable if and only if they target the exact same remote endpoint (`host:port`) and utilize the exact same measurement workload (`workload_type`, `test_url`, `repetitions`). If targets or workloads differ, `is_comparable` is set to `False` and comparability warnings are recorded.
 - **Summary Metadata**:
-  Each [`ScenarioSummary`](file:///home/arshiacomplus/connscope/src/connscope/scenarios/aggregation.py#L25-L65) retains `node_id`, `route_context`, and `operator_labels`.
+  Each [`ScenarioSummary`](../src/connscope/scenarios/aggregation.py#L25-L65) retains `node_id`, `route_context`, and `operator_labels`.
 - **Terminal Summary Output**:
-  [`render_execution_summary_table`](file:///home/arshiacomplus/connscope/src/connscope/scenarios/aggregation.py#L320-L360) renders a dedicated `NODE` column in the terminal matrix summary table, allowing immediate side-by-side comparison across vantage points:
+  [`render_execution_summary_table`](../src/connscope/scenarios/aggregation.py#L320-L360) renders a dedicated `NODE` column in the terminal matrix summary table, allowing immediate side-by-side comparison across vantage points:
 
 ```
 +--------------------------------------------------------------------------------------------------------------------+
@@ -1300,7 +1300,7 @@ When aggregating multi-node measurement runs ([`aggregate_execution_records`](fi
 
 ### 18.1 Architecture and Purpose
 
-Phase 21 introduces a profile-driven execution architecture for proxy engines (`Xray-core` and `sing-box`). Instead of declaring a separate Python adapter class for every permutation of protocol, transport, and security mode, execution is centralized into a unified, reusable implementation: [`ProfileDrivenAdapter`](file:///home/arshiacomplus/connscope/src/connscope/adapters/profile_adapter.py#L50-L450).
+Phase 21 introduces a profile-driven execution architecture for proxy engines (`Xray-core` and `sing-box`). Instead of declaring a separate Python adapter class for every permutation of protocol, transport, and security mode, execution is centralized into a unified, reusable implementation: [`ProfileDrivenAdapter`](../src/connscope/adapters/profile_adapter.py#L50-L450).
 
 Protocol families, transports, security mechanisms, and parameter variants are decoupled and represented as validated declarative catalog entities, while trusted native configuration builders construct engine-conforming JSON configurations.
 
@@ -1370,7 +1370,7 @@ ConnScope Phase 21 supports 8 distinct protocol profile families across both `xr
 
 ### 18.3 Native Engine Builders and Schema Discrepancy Isolation
 
-Configuration builders ([`build_xray_config`](file:///home/arshiacomplus/connscope/src/connscope/adapters/builders.py#L320-L450) and [`build_singbox_config`](file:///home/arshiacomplus/connscope/src/connscope/adapters/builders.py#L455-L580)) enforce strict engine isolation:
+Configuration builders ([`build_xray_config`](../src/connscope/adapters/builders.py#L320-L450) and [`build_singbox_config`](../src/connscope/adapters/builders.py#L455-L580)) enforce strict engine isolation:
 - **Xray-core Schema Rules**:
   - Outbound tag: defaults to `proxy`.
   - Stream settings: uses `streamSettings` object with `network` (`tcp`, `ws`, `grpc`), `security` (`reality`, `tls`, `none`).
@@ -1388,7 +1388,7 @@ Configuration builders ([`build_xray_config`](file:///home/arshiacomplus/connsco
 
 ### 18.4 Reusable Process Lifecycle & Resilience
 
-[`ProfileDrivenAdapter`](file:///home/arshiacomplus/connscope/src/connscope/adapters/profile_adapter.py#L50-L450) manages the complete measurement lifecycle:
+[`ProfileDrivenAdapter`](../src/connscope/adapters/profile_adapter.py#L50-L450) manages the complete measurement lifecycle:
 1. **Dynamic Port Allocation & Bounded Retries**:
    Allocates free loopback ports via `find_free_loopback_port()` (OS `bind((host, 0))`). If proxy fails readiness on an OS-assigned port, up to 3 bounded retries are executed with fresh ports before returning `FailureStage.PROCESS_SPAWN`.
 2. **Restricted Workspace Isolation**:
@@ -1418,7 +1418,7 @@ All existing helper functions (`generate_xray_client_config`, `generate_singbox_
 
 ### 19.1 Architecture and Six Independent Verification Tiers
 
-Phase 22 establishes a structured capability catalog ([`ProtocolCatalog`](file:///home/arshiacomplus/connscope/src/connscope/scenarios/catalog.py#L30-L2380)) and verification tier model ([`CoverageTier`](file:///home/arshiacomplus/connscope/src/connscope/scenarios/models.py#L35-L42)) that prevents ambiguity between what is documented, what is validated by schema, what can be generated, what has been tested with real binaries, and what has completed live data transfer.
+Phase 22 establishes a structured capability catalog ([`ProtocolCatalog`](../src/connscope/scenarios/catalog.py#L30-L2380)) and verification tier model ([`CoverageTier`](../src/connscope/scenarios/models.py#L35-L42)) that prevents ambiguity between what is documented, what is validated by schema, what can be generated, what has been tested with real binaries, and what has completed live data transfer.
 
 ```mermaid
 flowchart TD
@@ -1438,7 +1438,7 @@ flowchart TD
 
 1. **`catalogued`**: Authoritative upstream documentation, repository commit, or specification exists and has been reviewed. Unresolved implementations (e.g. Aether) are marked with `requires_source_confirmation: True`.
 2. **`schema_validated`**: Explicit parameter definition with typed validation, min/max bounds, allowed values, inter-parameter dependencies, and conflicts modeled in catalog data.
-3. **`config_generated`**: Concrete configuration builder ([`build_xray_config`](file:///home/arshiacomplus/connscope/src/connscope/adapters/builders.py#L445-L600), [`build_singbox_config`](file:///home/arshiacomplus/connscope/src/connscope/adapters/builders.py#L605-L750)) exists and maps options to native engine syntax without field cross-contamination.
+3. **`config_generated`**: Concrete configuration builder ([`build_xray_config`](../src/connscope/adapters/builders.py#L445-L600), [`build_singbox_config`](../src/connscope/adapters/builders.py#L605-L750)) exists and maps options to native engine syntax without field cross-contamination.
 4. **`binary_validated`**: Configuration checked by actual engine binary parser (`xray run -test -c` or `sing-box check -c`) or executed in a local isolated test lifecycle.
 5. **`live_connected`**: Handshake with a real, controlled remote test server verified. (Strict invariant: never claimed without an active, user-provided test server).
 6. **`data_transferred`**: Post-tunnel payload bytes transmitted and verified (HTTP 204 or byte-counter). (Strict invariant: never claimed without an active, user-provided test server).
@@ -1766,7 +1766,7 @@ Key architectural achievements in Phase 25:
 
 ### 22.2 The Nine Verification Stages
 
-ConnScope defines nine independent, monotonically evaluated verification stages for every parameter via [`ParameterCoverageStage`](file:///home/arshiacomplus/connscope/src/connscope/scenarios/parameter_coverage.py):
+ConnScope defines nine independent, monotonically evaluated verification stages for every parameter via [`ParameterCoverageStage`](../src/connscope/scenarios/parameter_coverage.py):
 
 | Stage | Identifier | Scope & Meaning |
 |---|---|---|
@@ -1839,7 +1839,7 @@ During real-binary configuration testing (`xray run -test -c` and `sing-box chec
 
 ### 22.5 Systematic Parameter-Variant Generator
 
-[`ScenarioGenerator`](file:///home/arshiacomplus/connscope/src/connscope/scenarios/generator.py) provides [`generate_parameter_matrix()`](file:///home/arshiacomplus/connscope/src/connscope/scenarios/generator.py#L615-L780) supporting both OFAT and Pairwise strategies:
+[`ScenarioGenerator`](../src/connscope/scenarios/generator.py) provides [`generate_parameter_matrix()`](../src/connscope/scenarios/generator.py#L615-L780) supporting both OFAT and Pairwise strategies:
 
 - **OFAT Strategy**:
   - Sets all applicable parameters to profile baseline defaults.
@@ -1899,7 +1899,7 @@ flowchart TD
     I --> J["10. Operator Summary (Terminal Table)"]
 ```
 
-1. **Environment Discovery**: [`connscope catalog check`](file:///home/arshiacomplus/connscope/src/connscope/cli/main.py#L243-L246) audits available host binaries (`xray`, `sing-box`), extracts their exact versions, and evaluates profile execution readiness across the 8 standard profile families.
+1. **Environment Discovery**: [`connscope catalog check`](../src/connscope/cli/main.py#L243-L246) audits available host binaries (`xray`, `sing-box`), extracts their exact versions, and evaluates profile execution readiness across the 8 standard profile families.
 2. **Pre-Execution Validation**: Ensures requested parameters conform to schema and engine capabilities before launching external binaries. Engine-specific unsupported flags (e.g. `verify_cert=False` on modern Xray v26+, Shadowsocks UOT on sing-box, gRPC `multi_mode` on sing-box) are rejected pre-execution with actionable error diagnostics.
 3. **Dry-Run Planning**: By default, `connscope matrix run` and `connscope matrix preview` operate in dry-run mode, producing scenario counts and execution plans without spawning external processes.
 4. **Authorized Execution**: External proxy client processes are spawned only when the `--execute` flag is explicitly provided.
@@ -1911,7 +1911,7 @@ flowchart TD
 
 ### 23.2 Local Diagnostic Harness
 
-To validate the execution path locally without remote dependencies or external network requirements, [`LocalDiagnosticHarness`](file:///home/arshiacomplus/connscope/src/connscope/scenarios/diagnostic_harness.py) provides a controlled loopback test environment:
+To validate the execution path locally without remote dependencies or external network requirements, [`LocalDiagnosticHarness`](../src/connscope/scenarios/diagnostic_harness.py) provides a controlled loopback test environment:
 
 - **Ephemeral Port Allocation**: Uses OS-assigned dynamic ports (`bind(("127.0.0.1", 0))`) with a strict safety guard that asserts allocated ports never match protected local ports (`10808`).
 - **Mock HTTP Server**: An in-process HTTP server listening on loopback that serves HTTP 204 responses to test URLs.
@@ -1992,13 +1992,13 @@ Phase 27 finalizes ConnScope for its first versioned release (`v0.1.0`). This ph
 
 ### 24.1 Packaging Configuration and Distribution Artifacts
 
-ConnScope packaging is configured via standard PEP 621 metadata in [`pyproject.toml`](file:///home/arshiacomplus/connscope/pyproject.toml) using the `setuptools.build_meta` build backend:
+ConnScope packaging is configured via standard PEP 621 metadata in [`pyproject.toml`](../pyproject.toml) using the `setuptools.build_meta` build backend:
 
 - **Built Distribution (Wheel)**: `dist/connscope-0.1.0-py3-none-any.whl` (pure-Python, platform-independent wheel).
 - **Source Distribution (sdist)**: `dist/connscope-0.1.0.tar.gz`.
 - **CLI Entry Points**:
   - Console script entry point: `connscope = connscope.cli.main:main`.
-  - Module entry points: `python -m connscope` via [`src/connscope/__main__.py`](file:///home/arshiacomplus/connscope/src/connscope/__main__.py) and `python -m connscope.cli` via [`src/connscope/cli/__main__.py`](file:///home/arshiacomplus/connscope/src/connscope/cli/__main__.py).
+  - Module entry points: `python -m connscope` via [`src/connscope/__main__.py`](../src/connscope/__main__.py) and `python -m connscope.cli` via [`src/connscope/cli/__main__.py`](../src/connscope/cli/__main__.py).
 - **Runtime Dependency Invariant**:
   - The core framework requires zero third-party dependencies (`dependencies = []`).
   - Development tools (`pytest`, `pytest-asyncio`) are optional extras (`[project.optional-dependencies] dev`).
@@ -2060,7 +2060,7 @@ flowchart TD
     L2 -.->|Operator Endpoint| L4 --> L5
 ```
 
-- **Formal Evidence Status**: Added [`VerificationStatus.LOCAL_DIAGNOSTIC_VERIFIED`](file:///home/arshiacomplus/connscope/src/connscope/scenarios/models.py#L27) (`"local_diagnostic_verified"`) and [`AdapterStatus.LOCAL_DIAGNOSTIC_VERIFIED`](file:///home/arshiacomplus/connscope/src/connscope/adapters/models.py#L96).
+- **Formal Evidence Status**: Added [`VerificationStatus.LOCAL_DIAGNOSTIC_VERIFIED`](../src/connscope/scenarios/models.py#L27) (`"local_diagnostic_verified"`) and [`AdapterStatus.LOCAL_DIAGNOSTIC_VERIFIED`](../src/connscope/adapters/models.py#L96).
 - **Execution Mode Tracking**: Records executed via `LocalDiagnosticHarness` set `execution_mode = "local_diagnostic"` and `evidence_status = "local_diagnostic_verified"`.
 - **Timing Disclaimers**: Local diagnostic loopback timings reflect process startup and OS loopback overhead. ConnScope records clearly separate these from internet transit benchmarks.
 

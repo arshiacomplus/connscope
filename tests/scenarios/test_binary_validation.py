@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from unittest.mock import patch
 import pytest
 
 from connscope.adapters import (
@@ -21,8 +22,37 @@ def test_detect_local_engine_versions():
     versions = detect_local_engine_versions()
     assert "xray" in versions
     assert "sing_box" in versions
-    assert versions["xray"] == "26.3.27"
-    assert versions["sing_box"] == "1.12.12"
+    assert isinstance(versions["xray"], str)
+    assert isinstance(versions["sing_box"], str)
+
+    def fake_resolve(bin_name, **kwargs):
+        if bin_name == "xray":
+            return "/mock/bin/xray"
+        if bin_name == "sing-box":
+            return "/mock/bin/sing-box"
+        return None
+
+    def fake_subprocess_run(cmd, **kwargs):
+        class Result:
+            returncode = 0
+            def __init__(self, stdout):
+                self.stdout = stdout
+        if cmd[0] == "/mock/bin/xray":
+            return Result("Xray 26.3.27 (Xray, Penetrates Everything.) Custom\n")
+        if cmd[0] == "/mock/bin/sing-box":
+            return Result("sing-box version 1.12.12\n")
+        return Result("")
+
+    with patch("connscope.scenarios.parameter_coverage.resolve_safe_executable", side_effect=fake_resolve), \
+         patch("subprocess.run", side_effect=fake_subprocess_run):
+        mocked_versions = detect_local_engine_versions()
+        assert mocked_versions["xray"] == "26.3.27"
+        assert mocked_versions["sing_box"] == "1.12.12"
+
+    with patch("connscope.scenarios.parameter_coverage.resolve_safe_executable", return_value=None):
+        unavail_versions = detect_local_engine_versions()
+        assert unavail_versions["xray"] == "unavailable"
+        assert unavail_versions["sing_box"] == "unavailable"
 
 @pytest.mark.parametrize(
     "profile_id",

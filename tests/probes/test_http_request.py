@@ -235,8 +235,10 @@ async def test_http_request_unpinned_verify_false_allowed(mock_open_connection):
 
 @patch("asyncio.open_connection")
 async def test_http_request_cancellation_during_read_cleans_up(mock_open_connection):
+    started_event = asyncio.Event()
     mock_reader = MagicMock()
     async def slow_read():
+        started_event.set()
         await asyncio.sleep(10)
     mock_reader.readline = AsyncMock(side_effect=slow_read)
 
@@ -249,7 +251,7 @@ async def test_http_request_cancellation_during_read_cleans_up(mock_open_connect
 
     probe = HttpRequestProbe()
     task = asyncio.create_task(probe.run(Target(host="example.com")))
-    await asyncio.sleep(0.01)
+    await started_event.wait()
     task.cancel()
 
     with pytest.raises(asyncio.CancelledError):
@@ -259,10 +261,12 @@ async def test_http_request_cancellation_during_read_cleans_up(mock_open_connect
 
 @patch("asyncio.open_connection")
 async def test_http_request_cancellation_during_drain_cleans_up(mock_open_connection):
+    started_event = asyncio.Event()
     mock_reader = MagicMock()
     mock_writer = MagicMock()
     mock_writer.wait_closed = AsyncMock()
     async def slow_drain():
+        started_event.set()
         await asyncio.sleep(10)
     mock_writer.drain = AsyncMock(side_effect=slow_drain)
     mock_writer.close = MagicMock()
@@ -271,7 +275,7 @@ async def test_http_request_cancellation_during_drain_cleans_up(mock_open_connec
 
     probe = HttpRequestProbe()
     task = asyncio.create_task(probe.run(Target(host="example.com")))
-    await asyncio.sleep(0.01)
+    await started_event.wait()
     task.cancel()
 
     with pytest.raises(asyncio.CancelledError):

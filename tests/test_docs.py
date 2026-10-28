@@ -38,10 +38,7 @@ def test_markdown_links_resolve() -> None:
             if url_str.startswith(("http://", "https://", "mailto:", "#")):
                 continue
             if url_str.startswith("file://"):
-                parsed = urlparse(url_str)
-                target = Path(parsed.path)
-                if not target.exists():
-                    broken_links.append(f"{md_file.relative_to(root)}: [{text}]({url_str})")
+                broken_links.append(f"{md_file.relative_to(root)}: [{text}]({url_str})")
                 continue
             target_path = url_str.split("#")[0]
             if not target_path:

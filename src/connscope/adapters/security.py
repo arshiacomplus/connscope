@@ -91,7 +91,7 @@ def redact_sensitive_data(val: Any) -> Any:
 
 def resolve_safe_executable(
     binary_name: str,
-    lookup_paths: tuple[str, ...] = DEFAULT_LOOKUP_PATHS,
+    lookup_paths: tuple[str, ...] | None = None,
 ) -> str | None:
     if not isinstance(binary_name, str) or not binary_name.strip():
         raise ValueError("binary_name must be a non-empty string")
@@ -103,7 +103,8 @@ def resolve_safe_executable(
     if clean_name not in ALLOWED_EXECUTABLES:
         raise ValueError(f"Executable '{clean_name}' is not permitted by allowlist")
 
-    for directory in lookup_paths:
+    actual_paths = lookup_paths if lookup_paths is not None else DEFAULT_LOOKUP_PATHS
+    for directory in actual_paths:
         candidate = Path(directory) / clean_name
         try:
             if candidate.is_file() and os.access(candidate, os.X_OK):

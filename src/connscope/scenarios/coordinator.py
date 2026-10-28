@@ -199,21 +199,6 @@ class ScenarioCoordinator:
                     self._notify_progress("scenario_excluded", scenario_id=scn.scenario_id, reason=reason)
                     continue
 
-                exe_ok, exe_path = adapter.check_executable()
-                if not exe_ok:
-                    reason = f"Required executable not found or not allowlisted: {exe_path}"
-                    excluded_details.append({"scenario_id": scn.scenario_id, "reason": reason})
-                    self._notify_progress("scenario_excluded", scenario_id=scn.scenario_id, reason=reason)
-                    continue
-
-                eng_def = self.catalog.get_engine(scn.engine_id)
-                local_versions = detect_local_engine_versions()
-                detected_v = local_versions.get(scn.engine_id)
-                if detected_v and detected_v not in ("unavailable", "unknown"):
-                    exe_version = detected_v
-                else:
-                    exe_version = eng_def.tested_versions[0] if eng_def and eng_def.tested_versions else None
-
                 adapter_cfg = self.migration_bridge.convert_scenario_to_adapter_config(scn)
 
                 if scn.engine_id == "xray" and adapter.metadata.security == SecurityType.TLS and adapter_cfg.get("verify_cert") is False:
@@ -241,6 +226,22 @@ class ScenarioCoordinator:
                     sp = adapter_cfg.get("spiderX") or adapter_cfg.get("spider_x")
                     if sp not in (None, "", "/"):
                         reason = "REALITY 'spiderX' crawler path is not supported by sing-box outbound"
+                        excluded_details.append({"scenario_id": scn.scenario_id, "reason": reason})
+                        self._notify_progress("scenario_excluded", scenario_id=scn.scenario_id, reason=reason)
+                        continue
+
+                eng_def = self.catalog.get_engine(scn.engine_id)
+                local_versions = detect_local_engine_versions()
+                detected_v = local_versions.get(scn.engine_id)
+                if detected_v and detected_v not in ("unavailable", "unknown"):
+                    exe_version = detected_v
+                else:
+                    exe_version = eng_def.tested_versions[0] if eng_def and eng_def.tested_versions else None
+
+                if execute:
+                    exe_ok, exe_path = adapter.check_executable()
+                    if not exe_ok:
+                        reason = f"Required executable not found or not allowlisted: {exe_path}"
                         excluded_details.append({"scenario_id": scn.scenario_id, "reason": reason})
                         self._notify_progress("scenario_excluded", scenario_id=scn.scenario_id, reason=reason)
                         continue

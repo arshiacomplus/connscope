@@ -36,6 +36,7 @@ from .process import (
     wait_for_proxy_ready,
 )
 from .security import (
+    DEFAULT_LOOKUP_PATHS,
     DEFAULT_OUTPUT_LIMIT_BYTES,
     redact_sensitive_data,
     resolve_safe_executable,

@@ -346,6 +346,12 @@ def test_cli_execution_with_config_option(fake_xray_binary, valid_reality_config
         assert val["details"]["redacted_config"]["uuid"] == "[REDACTED]"
 
 def test_optional_real_xray_integration():
+    from connscope.adapters.security import resolve_safe_executable
+
+    xray_bin = resolve_safe_executable("xray")
+    if not xray_bin:
+        pytest.skip("xray binary not available")
+
     from tests.adapters.test_xray_real_integration import load_real_xray_test_settings
 
     target, config, reason = load_real_xray_test_settings()
