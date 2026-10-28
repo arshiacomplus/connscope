@@ -3,15 +3,12 @@ import pytest
 from connscope.core import Target, ProbeResult, ProbeStatus
 
 def test_target_validation():
-    # Valid targets
     Target(host="example.com")
     Target(host="example.com", port=443)
 
-    # Empty host
     with pytest.raises(ValueError, match="host must not be empty"):
         Target(host="")
 
-    # Invalid ports
     with pytest.raises(ValueError, match="port must be between 1 and 65535"):
         Target(host="example.com", port=0)
     
@@ -19,7 +16,6 @@ def test_target_validation():
         Target(host="example.com", port=65536)
 
 def test_proberesult_mutable_isolation():
-    # Ensure default factories provide isolated dicts
     result1 = ProbeResult(
         probe="dummy",
         target=Target(host="example.com"),

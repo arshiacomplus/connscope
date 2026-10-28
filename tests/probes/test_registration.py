@@ -11,7 +11,6 @@ def test_register_builtin_probes():
     assert "tls_handshake" in names
     assert "http_request" in names
     
-    # Verify engine can resolve them
     engine = ProbeEngine(registry=registry)
     
     tcp_probe = engine.registry.get("tcp_connect")

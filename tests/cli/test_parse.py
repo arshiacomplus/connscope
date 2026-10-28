@@ -9,7 +9,6 @@ from connscope.cli.parse import (
     validate_timeout,
 )
 
-
 def test_parse_target_hostname():
     t = parse_target("example.com")
     assert t.host == "example.com"
@@ -18,7 +17,6 @@ def test_parse_target_hostname():
     t = parse_target("localhost")
     assert t.host == "localhost"
     assert t.port is None
-
 
 def test_parse_target_hostname_with_port():
     t = parse_target("example.com:443")
@@ -29,18 +27,15 @@ def test_parse_target_hostname_with_port():
     assert t.host == "internal.corp"
     assert t.port == 8080
 
-
 def test_parse_target_ipv4():
     t = parse_target("192.168.1.1")
     assert t.host == "192.168.1.1"
     assert t.port is None
 
-
 def test_parse_target_ipv4_with_port():
     t = parse_target("192.168.1.1:80")
     assert t.host == "192.168.1.1"
     assert t.port == 80
-
 
 def test_parse_target_bracketed_ipv6():
     t = parse_target("[2001:db8::1]")
@@ -51,7 +46,6 @@ def test_parse_target_bracketed_ipv6():
     assert t.host == "::1"
     assert t.port is None
 
-
 def test_parse_target_bracketed_ipv6_with_port():
     t = parse_target("[2001:db8::1]:443")
     assert t.host == "2001:db8::1"
@@ -61,7 +55,6 @@ def test_parse_target_bracketed_ipv6_with_port():
     assert t.host == "::1"
     assert t.port == 8080
 
-
 def test_parse_target_bare_ipv6():
     t = parse_target("2001:db8::1")
     assert t.host == "2001:db8::1"
@@ -70,7 +63,6 @@ def test_parse_target_bare_ipv6():
     t = parse_target("::1")
     assert t.host == "::1"
     assert t.port is None
-
 
 def test_parse_target_invalid_inputs():
     with pytest.raises(ValueError, match="empty"):
@@ -106,7 +98,6 @@ def test_parse_target_invalid_inputs():
     with pytest.raises(ValueError, match="Invalid character '/'"):
         parse_target("example.com/path")
 
-
 def test_parse_http_target_urls():
     t, cfg = parse_http_target("https://example.com/api?v=1#section")
     assert t.host == "example.com"
@@ -125,7 +116,6 @@ def test_parse_http_target_urls():
     assert t.port == 8000
     assert cfg["use_tls"] is False
     assert cfg["path"] == "/"
-
 
 def test_parse_http_target_plain_hosts():
     t, cfg = parse_http_target("example.com")
@@ -146,7 +136,6 @@ def test_parse_http_target_plain_hosts():
     assert cfg["use_tls"] is True
     assert cfg["path"] == "/"
 
-
 def test_parse_http_target_invalid():
     with pytest.raises(ValueError, match="empty"):
         parse_http_target("")
@@ -163,7 +152,6 @@ def test_parse_http_target_invalid():
     with pytest.raises(ValueError, match="Target contains a path but no scheme"):
         parse_http_target("example.com/path")
 
-
 def test_resolve_probe_name():
     reg = ProbeRegistry()
     class DummyProbe:
@@ -175,21 +163,17 @@ def test_resolve_probe_name():
     reg.register(DummyProbe("tls_handshake"))
     reg.register(DummyProbe("http_request"))
 
-    # Short aliases, case-insensitive
     assert resolve_probe_name("tcp", reg) == "tcp_connect"
     assert resolve_probe_name("TCP", reg) == "tcp_connect"
     assert resolve_probe_name("Dns", reg) == "dns_resolve"
     assert resolve_probe_name("tls", reg) == "tls_handshake"
     assert resolve_probe_name("HTTP", reg) == "http_request"
 
-    # Canonical names
     assert resolve_probe_name("tcp_connect", reg) == "tcp_connect"
     assert resolve_probe_name("HTTP_REQUEST", reg) == "http_request"
 
-    # Unknown
     with pytest.raises(KeyError, match="Unknown probe 'udp'"):
         resolve_probe_name("udp", reg)
-
 
 def test_validate_timeout():
     assert validate_timeout(None) is None

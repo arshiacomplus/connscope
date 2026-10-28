@@ -1,6 +1,5 @@
 from .probe import Probe
 
-
 class ProbeRegistry:
     def __init__(self) -> None:
         self._probes: dict[str, Probe] = {}

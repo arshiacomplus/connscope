@@ -1,0 +1,58 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Test (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+          pip install -e .[dev]
+          pip install build twine
+
+      - name: Run test suite
+        run: |
+          pytest -q
+
+      - name: Build distribution packages
+        run: |
+          rm -rf dist build
+          python -m build
+
+      - name: Validate distribution metadata
+        run: |
+          twine check --strict dist/*
+
+      - name: Test wheel installation in isolated environment
+        run: |
+          python -m venv /tmp/isolated_env
+          /tmp/isolated_env/bin/pip install --no-index --find-links=dist connscope
+          cd /tmp
+          /tmp/isolated_env/bin/connscope --version
+          /tmp/isolated_env/bin/connscope catalog check
+          /tmp/isolated_env/bin/connscope probe list
+          rm -rf /tmp/isolated_env

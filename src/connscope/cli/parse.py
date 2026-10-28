@@ -12,7 +12,6 @@ PROBE_ALIASES: dict[str, str] = {
     "http": "http_request",
 }
 
-
 def _parse_port(port_str: str) -> int:
     if not port_str:
         raise ValueError("Port cannot be empty")
@@ -23,7 +22,6 @@ def _parse_port(port_str: str) -> int:
     if not (1 <= port <= 65535):
         raise ValueError(f"Port {port} out of valid range (1-65535)")
     return port
-
 
 def parse_target(raw: str) -> Target:
     if not raw or not raw.strip():
@@ -76,7 +74,6 @@ def parse_target(raw: str) -> Target:
         return Target(host=host_part, port=port)
 
     return Target(host=s, port=None)
-
 
 def parse_http_target(raw: str) -> tuple[Target, dict[str, Any]]:
     if not raw or not raw.strip():
@@ -132,7 +129,6 @@ def parse_http_target(raw: str) -> tuple[Target, dict[str, Any]]:
     }
     return target, config
 
-
 def resolve_probe_name(name: str, registry: ProbeRegistry) -> str:
     cleaned = name.strip().lower()
     canonical = PROBE_ALIASES.get(cleaned, cleaned)
@@ -141,7 +137,6 @@ def resolve_probe_name(name: str, registry: ProbeRegistry) -> str:
         valid = ", ".join(sorted(set(list(PROBE_ALIASES.keys()) + list(available))))
         raise KeyError(f"Unknown probe '{name}'. Available probes: {valid}")
     return canonical
-
 
 def validate_timeout(timeout_val: float | str | None) -> float | None:
     if timeout_val is None:

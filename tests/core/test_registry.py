@@ -10,7 +10,6 @@ from connscope.core import (
     Target,
 )
 
-
 class DummyProbe(Probe):
     name = "dummy"
 
@@ -23,7 +22,6 @@ class DummyProbe(Probe):
             duration_ms=1.0,
         )
 
-
 def test_registry_registers_and_resolves_probe():
     registry = ProbeRegistry()
     probe = DummyProbe()
@@ -33,14 +31,12 @@ def test_registry_registers_and_resolves_probe():
     assert registry.get("dummy") is probe
     assert registry.names() == ("dummy",)
 
-
 def test_registry_rejects_duplicates():
     registry = ProbeRegistry()
     registry.register(DummyProbe())
 
     with pytest.raises(ValueError, match="already registered"):
         registry.register(DummyProbe())
-
 
 def test_registry_unknown_probe():
     registry = ProbeRegistry()

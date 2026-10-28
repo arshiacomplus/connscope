@@ -10,7 +10,6 @@ from connscope.core import (
     Target,
 )
 
-
 class DummyProbe(Probe):
     name = "dummy"
 
@@ -23,7 +22,6 @@ class DummyProbe(Probe):
             duration_ms=2.5,
             metrics={"latency_ms": 2.5},
         )
-
 
 async def test_engine_runs_registered_probe():
     probe = DummyProbe()
@@ -39,7 +37,6 @@ async def test_engine_runs_registered_probe():
     assert result.status is ProbeStatus.SUCCESS
     assert result.target.host == "example.com"
     assert result.metrics["latency_ms"] == 2.5
-
 
 async def test_engine_passes_config():
     class ConfigProbe(Probe):

@@ -21,8 +21,6 @@ class DnsResolveProbe(Probe):
         loop = asyncio.get_running_loop()
         
         try:
-            # We don't specify port since we just want to resolve the host
-            # 0 is the dummy port.
             addrinfo = await asyncio.wait_for(
                 loop.getaddrinfo(target.host, 0, type=socket.SOCK_STREAM),
                 timeout=timeout_s
@@ -30,7 +28,6 @@ class DnsResolveProbe(Probe):
             
             duration_ms = (time.monotonic() - start_time) * 1000.0
             
-            # Extract unique IPs, preserving order of first appearance
             addresses = []
             families = set()
             
@@ -44,7 +41,6 @@ class DnsResolveProbe(Probe):
                 elif family == socket.AF_INET6:
                     families.add("ipv6")
             
-            # Determine overall family
             if "ipv4" in families and "ipv6" in families:
                 family_str = "both"
             elif "ipv6" in families:

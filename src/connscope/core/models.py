@@ -3,12 +3,10 @@ from datetime import datetime
 from enum import StrEnum
 from typing import Any
 
-
 class ProbeStatus(StrEnum):
     SUCCESS = "success"
     FAILED = "failed"
     TIMEOUT = "timeout"
-
 
 @dataclass(frozen=True, slots=True)
 class Target:
@@ -20,7 +18,6 @@ class Target:
             raise ValueError("host must not be empty")
         if self.port is not None and not (1 <= self.port <= 65535):
             raise ValueError("port must be between 1 and 65535")
-
 
 @dataclass(frozen=True, slots=True)
 class ProbeResult:

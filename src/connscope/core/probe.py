@@ -3,7 +3,6 @@ from typing import Any
 
 from .models import ProbeResult, Target
 
-
 class Probe(ABC):
     name: str
 

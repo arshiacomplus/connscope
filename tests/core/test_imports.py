@@ -7,7 +7,6 @@ from connscope.core import (
     Target,
 )
 
-
 def test_core_imports():
     assert Probe is not None
     assert ProbeEngine is not None

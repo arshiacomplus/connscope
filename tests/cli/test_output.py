@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime, timezone, tzinfo
 import json
 import math
 import pytest
@@ -11,7 +11,6 @@ from connscope.cli.output import (
     render_result_json,
     result_to_dict,
 )
-
 
 def test_render_result_success_minimal():
     res = ProbeResult(
@@ -29,7 +28,6 @@ def test_render_result_success_minimal():
     assert "Metrics:" not in out
     assert "Details:" not in out
     assert "Error:" not in out
-
 
 def test_render_result_success_full():
     res = ProbeResult(
@@ -52,7 +50,6 @@ def test_render_result_success_full():
     assert "  addresses: 93.184.216.34, 2606:2800::1" in out
     assert "  family: both" in out
 
-
 def test_render_result_failed_with_error():
     res = ProbeResult(
         probe="tcp_connect",
@@ -67,7 +64,6 @@ def test_render_result_failed_with_error():
     assert "Duration: 105.00 ms" in out
     assert "Error: Connection refused" in out
 
-
 def test_render_result_timeout():
     res = ProbeResult(
         probe="tls_handshake",
@@ -81,7 +77,6 @@ def test_render_result_timeout():
     assert "Target:   [2001:db8::1]:443" in out
     assert "Status:   timeout" in out
     assert "Error: Operation timed out after 5.0s" in out
-
 
 def test_render_probe_list():
     names = ("dns_resolve", "http_request", "tcp_connect", "tls_handshake")
@@ -99,15 +94,8 @@ def test_render_probe_list():
     assert "  tcp_connect (alias: tcp)" in lines
     assert "  tls_handshake (alias: tls)" in lines
 
-
 def test_render_error():
     assert render_error("Something broke") == "Error: Something broke"
-
-
-# ---------------------------------------------------------------------------
-# Phase 4 JSON Serialization Tests
-# ---------------------------------------------------------------------------
-
 
 def test_result_to_dict_success():
     ts = datetime(2026, 10, 12, 12, 0, 0, tzinfo=timezone.utc)
@@ -141,7 +129,6 @@ def test_result_to_dict_success():
     assert d["details"] == {"extra": "value"}
     assert d["error"] is None
 
-
 def test_result_to_dict_failed():
     ts = datetime(2026, 10, 12, 12, 0, 0, tzinfo=timezone.utc)
     res = ProbeResult(
@@ -157,7 +144,6 @@ def test_result_to_dict_failed():
     d = result_to_dict(res)
     assert d["status"] == "failed"
     assert d["error"] == "Connection refused"
-
 
 def test_result_to_dict_timeout():
     ts = datetime(2026, 10, 12, 12, 0, 0, tzinfo=timezone.utc)
@@ -176,7 +162,6 @@ def test_result_to_dict_timeout():
     assert d["error"] == "Resolution timed out"
     assert d["target"] == {"host": "nonexistent.invalid", "port": None}
 
-
 def test_result_to_dict_target_port_none():
     ts = datetime(2026, 10, 12, 12, 0, 0, tzinfo=timezone.utc)
     res = ProbeResult(
@@ -188,7 +173,6 @@ def test_result_to_dict_target_port_none():
     )
     d = result_to_dict(res)
     assert d["target"]["port"] is None
-
 
 def test_result_to_dict_empty_collections():
     ts = datetime(2026, 10, 12, 12, 0, 0, tzinfo=timezone.utc)
@@ -202,7 +186,6 @@ def test_result_to_dict_empty_collections():
     d = result_to_dict(res)
     assert d["metrics"] == {}
     assert d["details"] == {}
-
 
 def test_result_to_dict_nested_types():
     ts = datetime(2026, 10, 12, 12, 0, 0, tzinfo=timezone.utc)
@@ -231,7 +214,6 @@ def test_result_to_dict_nested_types():
     assert d["details"]["inactive"] is False
     assert d["details"]["nested"]["sub_list"] == [None, 42, 3.14, "hello"]
 
-
 def test_result_to_dict_rejects_timezone_naive():
     naive_ts = datetime(2026, 10, 12, 12, 0, 0)
     res = ProbeResult(
@@ -244,6 +226,26 @@ def test_result_to_dict_rejects_timezone_naive():
     with pytest.raises(ValueError, match="timezone-aware"):
         result_to_dict(res)
 
+def test_result_to_dict_rejects_tzinfo_with_none_utcoffset():
+    class _NoneOffsetTz(tzinfo):
+        def utcoffset(self, dt):
+            return None
+
+        def dst(self, dt):
+            return None
+
+        def tzname(self, dt):
+            return "NONE"
+
+    res = ProbeResult(
+        probe="test",
+        target=Target(host="localhost"),
+        status=ProbeStatus.SUCCESS,
+        started_at=datetime(2026, 10, 12, 12, 0, 0, tzinfo=_NoneOffsetTz()),
+        duration_ms=1.0,
+    )
+    with pytest.raises(ValueError, match="timezone-aware"):
+        result_to_dict(res)
 
 def test_result_to_dict_rejects_nan_duration():
     ts = datetime(2026, 10, 12, 12, 0, 0, tzinfo=timezone.utc)
@@ -257,7 +259,6 @@ def test_result_to_dict_rejects_nan_duration():
     with pytest.raises(ValueError, match="finite number"):
         result_to_dict(res)
 
-
 def test_result_to_dict_rejects_inf_duration():
     ts = datetime(2026, 10, 12, 12, 0, 0, tzinfo=timezone.utc)
     res = ProbeResult(
@@ -269,7 +270,6 @@ def test_result_to_dict_rejects_inf_duration():
     )
     with pytest.raises(ValueError, match="finite number"):
         result_to_dict(res)
-
 
 def test_result_to_dict_rejects_nan_metric():
     ts = datetime(2026, 10, 12, 12, 0, 0, tzinfo=timezone.utc)
@@ -284,7 +284,6 @@ def test_result_to_dict_rejects_nan_metric():
     with pytest.raises(ValueError, match="Non-finite float value"):
         result_to_dict(res)
 
-
 def test_result_to_dict_rejects_inf_details():
     ts = datetime(2026, 10, 12, 12, 0, 0, tzinfo=timezone.utc)
     res = ProbeResult(
@@ -297,7 +296,6 @@ def test_result_to_dict_rejects_inf_details():
     )
     with pytest.raises(ValueError, match="Non-finite float value"):
         result_to_dict(res)
-
 
 def test_result_to_dict_rejects_unsupported_object():
     ts = datetime(2026, 10, 12, 12, 0, 0, tzinfo=timezone.utc)
@@ -312,7 +310,6 @@ def test_result_to_dict_rejects_unsupported_object():
     with pytest.raises(TypeError, match="Unsupported value of type 'set'"):
         result_to_dict(res)
 
-
 def test_result_to_dict_rejects_non_str_key():
     ts = datetime(2026, 10, 12, 12, 0, 0, tzinfo=timezone.utc)
     res = ProbeResult(
@@ -325,7 +322,6 @@ def test_result_to_dict_rejects_non_str_key():
     )
     with pytest.raises(TypeError, match="Dictionary key.*must be str"):
         result_to_dict(res)
-
 
 def test_result_to_dict_immutability():
     ts = datetime(2026, 10, 12, 12, 0, 0, tzinfo=timezone.utc)
@@ -347,7 +343,6 @@ def test_result_to_dict_immutability():
     assert res.metrics == {"m": 1.0}
     assert res.details == {"d": ["original"]}
 
-
 def test_render_result_json_valid_json():
     ts = datetime(2026, 10, 12, 12, 0, 0, tzinfo=timezone.utc)
     res = ProbeResult(
@@ -367,7 +362,6 @@ def test_render_result_json_valid_json():
     assert parsed["duration_ms"] == 15.5
     assert parsed["error"] is None
 
-    # Verify keys are sorted
     lines = [line.strip().split(":")[0].strip('"') for line in rendered.splitlines() if ":" in line and not line.strip().startswith('"host"') and not line.strip().startswith('"port"')]
     top_level_keys = [k for k in lines if k in parsed]
     assert top_level_keys == sorted(top_level_keys)
